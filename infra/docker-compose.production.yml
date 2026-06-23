@@ -23,28 +23,28 @@ services:
       db:
         condition: service_healthy
     restart: always
-    build: ../backend/
+    image: rivn/foodgram_backend
     env_file: .env
     volumes:
       - media:/app/media
       - static:/app/collected_static
 
   frontend:
-    container_name: foodgram-front
-    build: ../frontend
+    image: rivn/foodgram_frontend
+    depends_on: 
+      - backend
+    command: cp -r /app/build/. /static/
+    restart: on-failure
     volumes:
-      - ../frontend/:/app/result_build/
+      - static:/static
 
   nginx:
-    container_name: foodgram-proxy
-    image: nginx:1.25.4-alpine
+    image: rivn/foodgram_gateway
     depends_on:
       - backend
+    restart: always
     ports:
       - "80:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ../frontend/build:/usr/share/nginx/html/
-      - ../docs/:/usr/share/nginx/html/api/docs/
+      - static:/staticfiles
       - media:/usr/share/nginx/html/media/
-      - static:/usr/share/nginx/html/django_static/
