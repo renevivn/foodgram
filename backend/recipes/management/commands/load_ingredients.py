@@ -12,9 +12,9 @@ class Command(BaseCommand):
         with open(
             settings.BASE_DIR / 'data' / 'ingredients.json',
             encoding='utf-8'
-        ) as f:
-            data = json.load(f)
-        for item in data:
+        ) as ingredients_file:
+            ingredients = json.load(ingredients_file)
+        for item in ingredients:
             Ingredient.objects.get_or_create(
                 name=item['name'],
                 measurement_unit=item['measurement_unit']

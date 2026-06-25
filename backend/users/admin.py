@@ -1,10 +1,10 @@
 from django.contrib import admin
-from users.models import CustomUser, Subscription
+from users.models import User, Subscription
 
 
-@admin.register(CustomUser)
-class CustomUserAdmin(admin.ModelAdmin):
-    """Панель администратора для модели CustomUser."""
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    """Панель администратора для модели User."""
 
     list_display = ('username', 'email', 'first_name', 'last_name',)
     search_fields = ('username', 'email',)

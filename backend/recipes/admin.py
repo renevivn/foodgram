@@ -26,8 +26,8 @@ class RecipeAdmin(admin.ModelAdmin):
     """Панель администратора для модели Recipe."""
 
     @admin.display(description='В избранном')
-    def get_favorite_count(self, obj):
-        return obj.favorite_set.count()
+    def get_favorite_count(self, recipe):
+        return recipe.favorite_set.count()
 
     list_display = ('name', 'author',)
     search_fields = ('name', 'author__username',)
@@ -43,17 +43,17 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
     search_fields = ('recipe__name', 'ingredient__name',)
 
 
-@admin.register(Favorite)
-class FavoriteAdmin(admin.ModelAdmin):
-    """Панель администратора для модели Favorite."""
-
+class UserRecipeAdmin(admin.ModelAdmin):
+    """Базовый класс для моделей с пользователем и рецептом."""
     list_display = ('user', 'recipe',)
     search_fields = ('user__username', 'recipe__name',)
+
+
+@admin.register(Favorite)
+class FavoriteAdmin(UserRecipeAdmin):
+    """Панель администратора для модели Favorite."""
 
 
 @admin.register(ShoppingList)
-class ShoppingListAdmin(admin.ModelAdmin):
+class ShoppingListAdmin(UserRecipeAdmin):
     """Панель администратора для модели ShoppingList."""
-
-    list_display = ('user', 'recipe',)
-    search_fields = ('user__username', 'recipe__name',)

@@ -100,7 +100,9 @@ class Recipe(models.Model):
 
 class RecipeIngredient(models.Model):
     """
-    Промежуточная модель для связи рецепта с ингредиентами и их количеством.
+    Промежуточная модель для связи рецепта с ингредиентами.
+
+    Хранит количество каждого ингредиента в рецепте.
     """
 
     recipe = models.ForeignKey(
@@ -158,14 +160,14 @@ class UserRecipeBaseModel(models.Model):
         verbose_name='Рецепт',
     )
 
+    class Meta:
+        abstract = True
+
     def __str__(self):
         return (
             f'Пользователь {self.user} добавил '
             f'Рецепт {self.recipe} в {self._meta.verbose_name}.'
         )
-
-    class Meta:
-        abstract = True
 
 
 class Favorite(UserRecipeBaseModel):
@@ -184,6 +186,13 @@ class Favorite(UserRecipeBaseModel):
 
 class ShoppingList(UserRecipeBaseModel):
     """Список покупок пользователя."""
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Пользователь',
+        related_name='shopping_list',
+    )
 
     class Meta:
         verbose_name = 'Список покупок'

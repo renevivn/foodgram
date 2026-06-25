@@ -8,11 +8,11 @@ from users.constants import (EMAIL_MAX_LENGTH, FIRST_NAME_MAX_LENGTH,
 from users.validators import validate_username_not_me
 
 
-class CustomUser(AbstractUser):
+class User(AbstractUser):
     """Кастомная модель пользователя."""
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ('username', 'first_name', 'last_name',)
 
     email = models.EmailField(
         'Адрес электронной почты',
@@ -56,25 +56,17 @@ class Subscription(models.Model):
     """Подписка пользователя на автора."""
 
     user = models.ForeignKey(
-        CustomUser,
+        User,
         on_delete=models.CASCADE,
         verbose_name='Пользователь',
         related_name='subscriptions',
     )
     author = models.ForeignKey(
-        CustomUser,
+        User,
         on_delete=models.CASCADE,
         verbose_name='Автор',
         related_name='subscribers',
     )
-
-    def clean(self):
-        """Запрещает подписку на самого себя."""
-        super().clean()
-        if self.user == self.author:
-            raise ValidationError(
-                'Нельзя подписаться на самого себя!'
-            )
 
     class Meta:
         verbose_name = 'Подписка'
@@ -89,6 +81,14 @@ class Subscription(models.Model):
                 condition=~models.Q(user=models.F('author')),
             )
         ]
+
+    def clean(self):
+        """Запрещает подписку на самого себя."""
+        super().clean()
+        if self.user == self.author:
+            raise ValidationError(
+                'Нельзя подписаться на самого себя!'
+            )
 
     def __str__(self):
         return (
