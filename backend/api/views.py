@@ -1,8 +1,9 @@
 import io
-from django.urls import reverse
+
 from django.contrib.auth import get_user_model
 from django.db.models import Exists, F, OuterRef, Sum, Value
 from django.http import FileResponse
+from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingList, Tag)
@@ -13,18 +14,17 @@ from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from .mixins import AddMixin, DeleteMixin
 
 from .filters import RecipeFilter
+from .mixins import AddMixin, DeleteMixin
 from .pagination import LimitPagination
 from .permissions import IsAuthorOrReadOnly
-from .serializers import (IngredientSerializer, RecipeMinifiedSerializer,
-                          RecipeReadSerializer, RecipeWriteSerializer,
-                          SetAvatarSerializer, TagSerializer,
-                          UserSerializer, UserWithRecipesSerializer,
-                          FavoriteSerializer, ShoppingListSerializer,
-                          SubscriptionSerializer,)
-
+from .serializers import (FavoriteSerializer, IngredientSerializer,
+                          RecipeMinifiedSerializer, RecipeReadSerializer,
+                          RecipeWriteSerializer, SetAvatarSerializer,
+                          ShoppingListSerializer, SubscriptionSerializer,
+                          TagSerializer, UserSerializer,
+                          UserWithRecipesSerializer)
 
 User = get_user_model()
 
@@ -197,11 +197,7 @@ class UserViewSet(
             return UserWithRecipesSerializer
         return UserSerializer
 
-    @action(
-        detail=False,
-        permission_classes=(IsAuthenticated,),
-        url_path='me'
-    )
+    @action(detail=False, permission_classes=(IsAuthenticated,), url_path='me')
     def me(self, request):
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)

@@ -6,7 +6,6 @@ from recipes.constants import (INGREDIENT_NAME_MAX_LENGTH,
                                MIN_INGREDIENT_AMOUNT, RECIPE_NAME_MAX_LENGTH,
                                TAG_NAME_MAX_LENGTH, TAG_SLUG_MAX_LENGTH)
 
-
 User = get_user_model()
 
 
