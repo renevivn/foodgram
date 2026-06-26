@@ -25,6 +25,7 @@ from .serializers import (FavoriteSerializer, IngredientSerializer,
                           ShoppingListSerializer, SubscriptionSerializer,
                           TagSerializer, UserSerializer,
                           UserWithRecipesSerializer)
+from djoser.views import UserViewSet as DjoserUserViewSet
 
 User = get_user_model()
 
@@ -170,24 +171,15 @@ class RecipeViewSet(AddMixin, DeleteMixin, viewsets.ModelViewSet):
         return queryset
 
 
-class UserViewSet(
-    ListModelMixin,
-    RetrieveModelMixin,
-    GenericViewSet,
-    AddMixin,
-    DeleteMixin,
-):
+class UserViewSet(DjoserUserViewSet, AddMixin, DeleteMixin):
     """ViewSet для управления пользователями."""
 
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
     pagination_class = LimitPagination
-    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get_serializer_class(self):
         if self.action in {'subscribe', 'subscriptions'}:
             return UserWithRecipesSerializer
-        return UserSerializer
+        return super().get_serializer_class()
 
     @action(detail=False, permission_classes=(IsAuthenticated,), url_path='me')
     def me(self, request):
@@ -204,7 +196,7 @@ class UserViewSet(
         serializer.save()
         return Response(serializer.data)
 
-    @action(detail=False, methods=('delete',), url_path='me/avatar')
+    @avatar.mapping.delete
     def avatar_delete(self, request):
         request.user.avatar.delete(save=True)
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -224,7 +216,7 @@ class UserViewSet(
         return Response(serializer.data)
 
     @action(detail=True, methods=('post',), url_path='subscribe')
-    def subscribe(self, request, pk=None):
+    def subscribe(self, request, id=None):
         author = self.get_object()
         return self.add_instance(
             SubscriptionSerializer,
@@ -233,7 +225,7 @@ class UserViewSet(
         )
 
     @subscribe.mapping.delete
-    def subscribe_delete(self, request, pk=None):
+    def subscribe_delete(self, request, id=None):
         author = self.get_object()
         return self.delete_instance(
             request.user.subscriptions.filter(author=author),
