@@ -63,35 +63,54 @@ class RecipeViewSet(AddMixin, DeleteMixin, viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=('post',),
+        methods=('post', 'delete'),
         permission_classes=(IsAuthenticated,),
-        url_path='favorite',
-        url_name='favorite-add',
+        url_path='favorite'
     )
-    def favorite_add(self, request, pk=None):
+    def favorite(self, request, pk=None):
         recipe = self.get_object()
-        return self.add_instance(
-            FavoriteSerializer,
-            {'user': request.user.id, 'recipe': recipe.id},
-            RecipeMinifiedSerializer(
-                recipe,
-                context=self.get_serializer_context()
-            ).data
-        )
-
-    @action(
-        detail=True,
-        methods=('delete',),
-        permission_classes=(IsAuthenticated,),
-        url_path='favorite',
-        url_name='favorite-delete',
-    )
-    def favorite_delete(self, request, pk=None):
-        recipe = self.get_object()
+        if request.method == 'POST':
+            return self.add_instance(
+                FavoriteSerializer,
+                {'user': request.user.id, 'recipe': recipe.id},
+                RecipeMinifiedSerializer(recipe, context=self.get_serializer_context()).data
+            )
         return self.delete_instance(
             Favorite.objects.filter(user=self.request.user, recipe=recipe),
             'Запись уже отсутствует.'
         )
+
+    # @action(
+    #     detail=True,
+    #     methods=('post',),
+    #     permission_classes=(IsAuthenticated,),
+    #     url_path='favorite',
+    #     url_name='favorite-add',
+    # )
+    # def favorite_add(self, request, pk=None):
+    #     recipe = self.get_object()
+    #     return self.add_instance(
+    #         FavoriteSerializer,
+    #         {'user': request.user.id, 'recipe': recipe.id},
+    #         RecipeMinifiedSerializer(
+    #             recipe,
+    #             context=self.get_serializer_context()
+    #         ).data
+    #     )
+
+    # @action(
+    #     detail=True,
+    #     methods=('delete',),
+    #     permission_classes=(IsAuthenticated,),
+    #     url_path='favorite',
+    #     url_name='favorite-delete',
+    # )
+    # def favorite_delete(self, request, pk=None):
+    #     recipe = self.get_object()
+    #     return self.delete_instance(
+    #         Favorite.objects.filter(user=self.request.user, recipe=recipe),
+    #         'Запись уже отсутствует.'
+    #     )
 
     @action(
         detail=True,
