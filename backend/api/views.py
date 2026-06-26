@@ -73,7 +73,10 @@ class RecipeViewSet(AddMixin, DeleteMixin, viewsets.ModelViewSet):
             return self.add_instance(
                 FavoriteSerializer,
                 {'user': request.user.id, 'recipe': recipe.id},
-                RecipeMinifiedSerializer(recipe, context=self.get_serializer_context()).data
+                RecipeMinifiedSerializer(
+                    recipe,
+                    context=self.get_serializer_context()
+                ).data
             )
         return self.delete_instance(
             Favorite.objects.filter(user=self.request.user, recipe=recipe),
