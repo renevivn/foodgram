@@ -54,4 +54,3 @@ v1_urlpatterns = [
 urlpatterns = [
     path('api/', include(v1_urlpatterns)),
 ]
-а
