@@ -31,6 +31,7 @@ User = get_user_model()
 
 class ReadOnlyNoPaginationViewSet(viewsets.ReadOnlyModelViewSet):
     """Базовый ViewSet только для чтения без пагинации."""
+
     pagination_class = None
 
 
@@ -64,7 +65,8 @@ class RecipeViewSet(AddMixin, DeleteMixin, viewsets.ModelViewSet):
         detail=True,
         methods=('post',),
         permission_classes=(IsAuthenticated,),
-        url_path='favorite'
+        url_path='favorite',
+        url_name='favorite-add',
     )
     def favorite_add(self, request, pk=None):
         recipe = self.get_object()
@@ -81,7 +83,8 @@ class RecipeViewSet(AddMixin, DeleteMixin, viewsets.ModelViewSet):
         detail=True,
         methods=('delete',),
         permission_classes=(IsAuthenticated,),
-        url_path='favorite'
+        url_path='favorite',
+        url_name='favorite-delete',
     )
     def favorite_delete(self, request, pk=None):
         recipe = self.get_object()

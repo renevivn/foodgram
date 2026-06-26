@@ -12,7 +12,7 @@ urlpatterns_users = [
     path('users/me/', UserViewSet.as_view({'get': 'me'}), name='user-me'),
     path(
         'users/me/avatar/',
-        UserViewSet.as_view({'put': 'avatar', 'delete': 'avatar'}),
+        UserViewSet.as_view({'put': 'avatar', 'delete': 'avatar_delete'}),
         name='user-avatar'
     ),
     path(
@@ -22,7 +22,9 @@ urlpatterns_users = [
     ),
     path(
         'users/<int:pk>/subscribe/',
-        UserViewSet.as_view({'post': 'subscribe', 'delete': 'subscribe'}),
+        UserViewSet.as_view(
+            {'post': 'subscribe', 'delete': 'subscribe_delete'}
+        ),
         name='user-subscribe'
     ),
 ]
