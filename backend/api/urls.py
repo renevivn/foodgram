@@ -27,11 +27,25 @@ urlpatterns_users = [
         ),
         name='user-subscribe'
     ),
+    path(
+        'recipes/<int:pk>/favorite/',
+        RecipeViewSet.as_view(
+            {'post': 'favorite_add', 'delete': 'favorite_delete'}
+        ),
+        name='recipe-favorite'
+    ),
+    path(
+        'recipes/<int:pk>/shopping_cart/',
+        RecipeViewSet.as_view(
+            {'post': 'shopping_cart_add', 'delete': 'shopping_cart_delete'}
+        ),
+        name='recipe-shopping-cart'
+    ),
 ]
 
 v1_urlpatterns = [
-    path('', include(v1_router.urls)),
     path('', include(urlpatterns_users)),
+    path('', include(v1_router.urls)),
     path('auth/', include('djoser.urls.authtoken')),
     path('', include('djoser.urls')),
 ]
