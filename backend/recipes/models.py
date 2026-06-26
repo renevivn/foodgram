@@ -152,6 +152,7 @@ class UserRecipeBaseModel(models.Model):
         User,
         on_delete=models.CASCADE,
         verbose_name='Пользователь',
+        related_name='%(class)ss'
     )
     recipe = models.ForeignKey(
         Recipe,
@@ -185,13 +186,6 @@ class Favorite(UserRecipeBaseModel):
 
 class ShoppingList(UserRecipeBaseModel):
     """Список покупок пользователя."""
-
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        verbose_name='Пользователь',
-        related_name='shopping_list',
-    )
 
     class Meta:
         verbose_name = 'Список покупок'

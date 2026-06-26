@@ -78,16 +78,11 @@ class RecipeViewSet(AddMixin, DeleteMixin, viewsets.ModelViewSet):
             ).data
         )
 
-    @action(
-        detail=True,
-        methods=('delete',),
-        permission_classes=(IsAuthenticated,),
-        url_path='favorite',
-    )
+    @favorite_add.mapping.delete
     def favorite_delete(self, request, pk=None):
         recipe = self.get_object()
         return self.delete_instance(
-            Favorite.objects.filter(user=self.request.user, recipe=recipe),
+            request.user.favorites.filter(recipe=recipe),
             'Запись уже отсутствует.'
         )
 
@@ -108,16 +103,11 @@ class RecipeViewSet(AddMixin, DeleteMixin, viewsets.ModelViewSet):
             ).data
         )
 
-    @action(
-        detail=True,
-        methods=('delete',),
-        permission_classes=(IsAuthenticated,),
-        url_path='shopping_cart'
-    )
+    @shopping_cart_add.mapping.delete
     def shopping_cart_delete(self, request, pk=None):
         recipe = self.get_object()
         return self.delete_instance(
-            ShoppingList.objects.filter(user=self.request.user, recipe=recipe),
+            request.user.shoppinglists.filter(recipe=recipe),
             'Запись уже отсутствует.'
         )
 
@@ -127,7 +117,7 @@ class RecipeViewSet(AddMixin, DeleteMixin, viewsets.ModelViewSet):
         url_path='download_shopping_cart'
     )
     def download_shopping_cart(self, request):
-        recipe_ids = request.user.shopping_list.values_list(
+        recipe_ids = request.user.shoppinglists.values_list(
             'recipe',
             flat=True
         )
@@ -140,22 +130,23 @@ class RecipeViewSet(AddMixin, DeleteMixin, viewsets.ModelViewSet):
         ).order_by('name')
 
         content = '\n'.join(
-            f'{item["name"]} ({item["unit"]}) — {item["total_amount"]}'
+            f'{item.get("name", "")} ({item.get("unit", "")}) — '
+            f'{item.get("total_amount", 0)}'
             for item in ingredients
         )
-        response = FileResponse(
+
+        return FileResponse(
             io.BytesIO(content.encode('utf-8')),
             as_attachment=True,
             filename='shopping_cart.txt',
             content_type='text/plain'
         )
-        return response
 
-    @action(detail=True, methods=('get',), url_path='get-link')
+    @action(detail=True, url_path='get-link')
     def get_link(self, request, pk=None):
         recipe = self.get_object()
         short_link = request.build_absolute_uri(
-            reverse('short_link', args=[recipe.id])
+            reverse('short_link', args=(recipe.id,))
         )
         return Response({'short-link': short_link})
 
@@ -218,7 +209,11 @@ class UserViewSet(
         request.user.avatar.delete(save=True)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, url_path='subscriptions')
+    @action(
+        detail=False,
+        url_path='subscriptions',
+        permission_classes=(IsAuthenticated,)
+    )
     def subscriptions(self, request):
         queryset = User.objects.filter(subscribers__user=request.user)
         page = self.paginate_queryset(queryset)
@@ -237,7 +232,7 @@ class UserViewSet(
             self.get_serializer(author).data
         )
 
-    @action(detail=True, methods=('delete',), url_path='subscribe')
+    @subscribe.mapping.delete
     def subscribe_delete(self, request, pk=None):
         author = self.get_object()
         return self.delete_instance(

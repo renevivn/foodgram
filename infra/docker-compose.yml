@@ -36,7 +36,7 @@ services:
       - ../frontend/:/app/result_build/
 
   nginx:
-    container_name: foodgram-proxy
+    #container_name: foodgram-proxy
     image: nginx:1.25.4-alpine
     depends_on:
       - backend

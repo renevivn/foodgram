@@ -45,6 +45,7 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
 
 class UserRecipeAdmin(admin.ModelAdmin):
     """Базовый класс для моделей с пользователем и рецептом."""
+
     list_display = ('user', 'recipe',)
     search_fields = ('user__username', 'recipe__name',)
 

@@ -100,6 +100,11 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 class IngredientWriteSerializer(serializers.ModelSerializer):
     """Сериализатор ингредиента в рецепте (для записи)."""
 
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all(),
+        source='ingredient'
+    )
+
     class Meta:
         model = RecipeIngredient
         fields = (
@@ -126,11 +131,6 @@ class Base64ImageField(serializers.ImageField):
 class RecipeWriteSerializer(serializers.ModelSerializer):
     """Сериализатор рецепта (для записи)."""
 
-    tags = serializers.PrimaryKeyRelatedField(
-        queryset=Tag.objects.all(),
-        many=True,
-        allow_empty=False,
-    )
     ingredients = IngredientWriteSerializer(many=True, allow_empty=False)
     image = Base64ImageField()
 
@@ -152,11 +152,10 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
         Создает связи рецепта с ингредиентами.
         """
-
         RecipeIngredient.objects.bulk_create(
             RecipeIngredient(
                 recipe=recipe,
-                ingredient=ingredient['id'],
+                ingredient=ingredient['ingredient'],
                 amount=ingredient['amount']
             )
             for ingredient in ingredients
@@ -185,7 +184,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             instance.tags.set(tags)
 
         if ingredients is not None:
-            instance.recipe_ingredients.clear()
+            # clear() недоступен для ForeignKey без null=True,
+            # поэтому используем all().delete()
+            instance.recipe_ingredients.all().delete()
             self.add_ingredients(instance, ingredients)
 
         return instance
@@ -197,7 +198,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         Добавляет аннотации is_favorited и is_in_shopping_cart на основе
         текущего авторизованного пользователя.
         """
-
         request = self.context.get('request')
         user = request.user
         annotated = Recipe.objects.annotate(
@@ -212,7 +212,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Проверяет наличие обязательных полей при обновлении рецепта."""
-
         if self.context['request'].method not in ('PATCH', 'PUT'):
             return data
         if 'ingredients' not in data:
@@ -231,7 +230,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     def validate_ingredients(self, value):
         """Проверяет, что список ингредиентов без повторов."""
-        ids = [item['id'] for item in value]
+        ids = [item['ingredient'].pk for item in value]
         if len(ids) != len(set(ids)):
             raise serializers.ValidationError(
                 'Ингредиенты не должны повторяться.'
@@ -291,7 +290,6 @@ class UserWithRecipesSerializer(UserSerializer):
 
     def get_recipes(self, obj):
         """Возвращает список рецептов пользователя с учетом лимита."""
-
         request = self.context.get('request')
         limit = request.query_params.get('recipes_limit')
         recipes = obj.recipe.all()
@@ -338,12 +336,14 @@ class ShoppingListSerializer(UserRecipeBaseSerializer):
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
+    """Сериализатор подписки."""
 
     class Meta:
         model = Subscription
         fields = ('user', 'author',)
 
     def validate(self, data):
+        """Проверяет что пользователь не подписывается на себя."""
         if data['user'] == data['author']:
             raise serializers.ValidationError('Нельзя подписаться на себя.')
         return data
