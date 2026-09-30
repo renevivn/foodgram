@@ -45,9 +45,14 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def get_is_subscribed(self, author):
-        """Проверяет, подписан ли текущий пользователем на автора."""
+        """Проверяет, подписан ли текущий пользователь на автора."""
         request = self.context.get('request')
-        return bool(request) and author.subscribers.filter(
+        if not request or not request.user.is_authenticated:
+            return False
+        if hasattr(author, 'current_user_subscriptions'):
+            return bool(author.current_user_subscriptions)
+
+        return author.subscribers.filter(
             user_id=request.user.pk,
         ).exists()
 

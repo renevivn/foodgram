@@ -1,7 +1,7 @@
 import io
 
 from django.contrib.auth import get_user_model
-from django.db.models import Exists, F, OuterRef, Sum, Value
+from django.db.models import Exists, F, OuterRef, Prefetch, Sum, Value
 from django.http import FileResponse
 from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -12,6 +12,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from users.models import Subscription
 
 from .filters import RecipeFilter
 from .mixins import AddMixin, DeleteMixin
@@ -22,7 +23,6 @@ from .serializers import (FavoriteSerializer, IngredientSerializer,
                           RecipeWriteSerializer, SetAvatarSerializer,
                           ShoppingListSerializer, SubscriptionSerializer,
                           TagSerializer, UserWithRecipesSerializer)
-
 
 User = get_user_model()
 
@@ -155,9 +155,14 @@ class RecipeViewSet(AddMixin, DeleteMixin, viewsets.ModelViewSet):
         return RecipeReadSerializer
 
     def get_queryset(self):
-        """Аннотирует рецепты флагами is_favorited и is_in_shopping_cart."""
+        """Рецепты со связанными данными и флагами пользователя."""
         user = self.request.user
-        queryset = Recipe.objects.annotate(
+        queryset = Recipe.objects.select_related(
+            'author',
+        ).prefetch_related(
+            'tags',
+            'recipe_ingredients__ingredient',
+        ).annotate(
             is_favorited=Exists(
                 Favorite.objects.filter(user=user, recipe=OuterRef('pk'))
             ) if user.is_authenticated else Value(False),
@@ -165,6 +170,15 @@ class RecipeViewSet(AddMixin, DeleteMixin, viewsets.ModelViewSet):
                 ShoppingList.objects.filter(user=user, recipe=OuterRef('pk'))
             ) if user.is_authenticated else Value(False),
         )
+        if user.is_authenticated:
+            # Заранее подгружаем подписки текущего пользователя на авторов.
+            queryset = queryset.prefetch_related(
+                Prefetch(
+                    'author__subscribers',
+                    queryset=Subscription.objects.filter(user=user),
+                    to_attr='current_user_subscriptions',
+                )
+            )
         return queryset
 
 
