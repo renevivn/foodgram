@@ -1,3 +1,5 @@
+[English version](README.md)
+
 # Foodgram
 
 # **Описание**
@@ -24,10 +26,12 @@ Foodgram — сервис для публикации рецептов. Поль
 
 - Клонировать репозиторий и перейти в него:
 
-```git clone https://github.com/renevivn/foodgram.git```
-```cd foodgram```
+```bash
+git clone https://github.com/renevivn/foodgram.git
+cd foodgram
+```
 
-- Создать файл `.env` в папке `infra/` и заполнить переменные окружения:
+- Создать файл `.env` в папке `infra/` и заполнить переменные окружения (пример — в `.env.example`):
 
 ```env
 POSTGRES_DB=foodgram
@@ -40,16 +44,25 @@ DEBUG=False
 ALLOWED_HOSTS=localhost,127.0.0.1
 ```
 
-- Запустить проект в контейнерах:
+- Запустить проект в контейнерах (миграции и сбор статики выполняются автоматически при старте backend):
 
-```docker compose -f infra/docker-compose.yml up -d --build```
+```bash
+docker compose -f infra/docker-compose.yml up -d --build
+```
 
 - Создать суперпользователя:
 
-```docker compose exec backend python manage.py createsuperuser```
+```bash
+docker compose -f infra/docker-compose.yml exec backend python manage.py createsuperuser
+```
 
 - Загрузить ингредиенты в базу данных:
-```docker compose -f infra/docker-compose.yml exec backend python manage.py load_ingredients```
+
+```bash
+docker compose -f infra/docker-compose.yml exec backend python manage.py load_ingredients
+```
+
+После запуска проект доступен по адресу http://localhost/, документация API — http://localhost/api/docs/redoc.html.
 
 # **Примеры запросов**
 
@@ -101,8 +114,7 @@ GET /api/recipes/download_shopping_cart/
 
 # Адрес проекта
 
-Проект был развернут на учебном сервере с помощью конвейера GitHub Actions
-(тесты → Docker Hub → развертывание по SSH); данный сервер больше не доступен. Приложение можно запустить локально, как описано выше.
+Проект был развёрнут на учебном сервере, сейчас недоступен. Локально запускается по инструкции выше.
 
 # **Автор**
 
