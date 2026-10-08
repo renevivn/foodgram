@@ -1,33 +1,36 @@
+[Русская версия](README.ru.md)
+
 # Foodgram
 
-# **Описание**
+## Description
 
-Foodgram — сервис для публикации рецептов. Пользователи могут регистрироваться, публиковать рецепты, добавлять чужие рецепты в избранное и подписываться на авторов. Сервис позволяет формировать список покупок и скачивать его в виде текстового файла.
+Foodgram is a recipe-sharing service. Users can sign up, publish recipes, add other users' recipes to favorites and follow authors. The service builds a shopping list from selected recipes and lets users download it as a text file.
 
-Проект развёрнут в Docker-контейнерах.
+The project runs in Docker containers.
 
-# **Использованные технологии**
+## Tech stack
 
-- [Python 3.12](https://docs.python.org/3.12/) — язык программирования для backend-части проекта
-- [Django 5.1](https://docs.djangoproject.com/) — backend-фреймворк
-- [Django REST Framework](https://www.django-rest-framework.org/) — инструменты для создания REST API
-- [Djoser](https://djoser.readthedocs.io/en/latest/) — библиотека для работы с пользователями и токен-аутентификацией
-- [PostgreSQL](https://www.postgresql.org/docs/) — реляционная база данных
-- [React](https://react.dev/) — библиотека для разработки frontend-интерфейса
-- [Docker](https://docs.docker.com/) — платформа для контейнеризации приложения
-- [Docker Compose](https://docs.docker.com/compose/) — инструмент для запуска многоконтейнерного приложения
-- [Nginx](https://nginx.org/en/docs/) — веб-сервер
-- [Gunicorn](https://gunicorn.org/) — WSGI-сервер для запуска Django
-- [Git](https://git-scm.com/docs) — система контроля версий
+- [Python 3.12](https://docs.python.org/3.12/)
+- [Django 5.1](https://docs.djangoproject.com/) — web framework
+- [Django REST Framework](https://www.django-rest-framework.org/) — REST API
+- [Djoser](https://djoser.readthedocs.io/en/latest/) — user management and token authentication
+- [PostgreSQL](https://www.postgresql.org/docs/) — database
+- [React](https://react.dev/) — frontend
+- [Docker](https://docs.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) — containerization
+- [Nginx](https://nginx.org/en/docs/) — reverse proxy, static and media files
+- [Gunicorn](https://gunicorn.org/) — WSGI server
+- [GitHub Actions](https://docs.github.com/en/actions) — CI/CD
 
-# **Установка**
+## Getting started
 
-- Клонировать репозиторий и перейти в него:
+Clone the repository and go to the project folder:
 
-```git clone https://github.com/renevivn/foodgram.git```
-```cd foodgram```
+```bash
+git clone https://github.com/renevivn/foodgram.git
+cd foodgram
+```
 
-- Создать файл `.env` в папке `infra/` и заполнить переменные окружения:
+Create a `.env` file in the `infra/` folder (see `.env.example`):
 
 ```env
 POSTGRES_DB=foodgram
@@ -40,36 +43,40 @@ DEBUG=False
 ALLOWED_HOSTS=localhost,127.0.0.1
 ```
 
-- Запустить проект в контейнерах:
+Start the containers (migrations and static collection run automatically when the backend starts):
 
-```docker compose -f infra/docker-compose.yml up -d --build```
+```bash
+docker compose -f infra/docker-compose.yml up -d --build
+```
 
-- Создать суперпользователя:
+Create a superuser and load the ingredients:
 
-```docker compose exec backend python manage.py createsuperuser```
+```bash
+docker compose -f infra/docker-compose.yml exec backend python manage.py createsuperuser
+docker compose -f infra/docker-compose.yml exec backend python manage.py load_ingredients
+```
 
-- Загрузить ингредиенты в базу данных:
-```docker compose -f infra/docker-compose.yml exec backend python manage.py load_ingredients```
+The app will be available at http://localhost/, the API documentation at http://localhost/api/docs/redoc.html.
 
-# **Примеры запросов**
+## API examples
 
-- Регистрация пользователя:
+Register a user:
 
-POST /api/users/
+`POST /api/users/`
 
 ```json
 {
   "username": "new_user",
   "email": "user@example.com",
-  "first_name": "Иван",
-  "last_name": "Ренев",
+  "first_name": "Ivan",
+  "last_name": "Renev",
   "password": "strong_password"
 }
 ```
 
-- Получение списка рецептов:
+Get the list of recipes:
 
-GET /api/recipes/
+`GET /api/recipes/`
 
 ```json
 {
@@ -79,10 +86,10 @@ GET /api/recipes/
   "results": [
     {
       "id": 1,
-      "name": "Борщ",
+      "name": "Borscht",
       "image": "http://localhost/media/recipe_images/borscht.jpg",
       "cooking_time": 60,
-      "tags": [{"id": 1, "name": "Обед", "slug": "lunch"}],
+      "tags": [{"id": 1, "name": "Lunch", "slug": "lunch"}],
       "author": {"id": 1, "username": "user1"},
       "is_favorited": false,
       "is_in_shopping_cart": false
@@ -91,19 +98,18 @@ GET /api/recipes/
 }
 ```
 
-- Добавить рецепт в избранное:
+Add a recipe to favorites:
 
-POST /api/recipes/{id}/favorite/
+`POST /api/recipes/{id}/favorite/`
 
-- Скачать список покупок:
+Download the shopping list:
 
-GET /api/recipes/download_shopping_cart/
+`GET /api/recipes/download_shopping_cart/`
 
-# Адрес проекта
+## Deployment
 
-Проект был развёрнут на учебном сервере, сейчас недоступен.
+The project was deployed to a training server via the GitHub Actions pipeline (tests → Docker Hub → SSH deploy); that server is no longer available. The app can be run locally as described above.
 
-# **Автор**
+## Author
 
-Иван Ренев
-GitHub: https://github.com/renevivn
+Ivan Renev — [github.com/renevivn](https://github.com/renevivn)

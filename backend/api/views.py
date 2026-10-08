@@ -197,7 +197,12 @@ class UserViewSet(DjoserUserViewSet, AddMixin, DeleteMixin):
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
-    @action(detail=False, methods=('put',), url_path='me/avatar')
+    @action(
+        detail=False,
+        methods=('put',),
+        url_path='me/avatar',
+        permission_classes=(IsAuthenticated,),
+    )
     def avatar(self, request):
         serializer = SetAvatarSerializer(
             request.user,
@@ -226,13 +231,23 @@ class UserViewSet(DjoserUserViewSet, AddMixin, DeleteMixin):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    @action(detail=True, methods=('post',), url_path='subscribe')
+    @action(
+        detail=True,
+        methods=('post',),
+        url_path='subscribe',
+        permission_classes=(IsAuthenticated,),
+    )
     def subscribe(self, request, id=None):
         author = self.get_object()
-        return self.add_instance(
-            SubscriptionSerializer,
-            {'user': request.user.id, 'author': author.id},
-            self.get_serializer(author).data
+        serializer = SubscriptionSerializer(
+            data={'user': request.user.id, 'author': author.id},
+            context=self.get_serializer_context(),
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            self.get_serializer(author).data,
+            status=status.HTTP_201_CREATED,
         )
 
     @subscribe.mapping.delete
